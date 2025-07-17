@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>🔮 Relatório de Previsões</h2>
+
+<hr>
+<h4>⚠️ Produtos vencendo nos próximos 30 dias</h4>
+{% if produtos_vencendo %}
+<a href="{{ url_for('exportar_previsoes') }}" class="btn btn-outline-success mb-3">
+    ⬇️ Exportar Previsões (Excel)
+</a>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Nome</th>
+            <th>Lote</th>
+            <th>Validade</th>
+            <th>Quantidade</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in produtos_vencendo %}
+        <tr class="table-warning">
+            <td>{{ p.nome }}</td>
+            <td>{{ p.lote }}</td>
+            <td>{{ p.validade.strftime('%d/%m/%Y') }}</td>
+            <td>{{ p.quantidade }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-success">Nenhum produto com vencimento próximo.</div>
+{% endif %}
+
+<hr>
+<h4>📉 Produtos com previsão de ruptura de estoque</h4>
+{% if produtos_em_alerta %}
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Nome</th>
+            <th>Qtd. Atual</th>
+            <th>Estoque Mínimo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in produtos_em_alerta %}
+        <tr class="table-danger">
+            <td>{{ p.nome }}</td>
+            <td>{{ p.quantidade }}</td>
+            <td>{{ p.estoque_minimo }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-success">Nenhum produto com risco iminente de ruptura.</div>
+{% endif %}
+
+{% endblock %}

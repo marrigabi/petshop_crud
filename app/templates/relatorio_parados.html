@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
 <h2>Produtos Sem Movimentação nos Últimos {{ dias }} Dias</h2>
+<a href="{{ url_for('exportar_parados') }}" class="btn btn-outline-success mb-3">
+    ⬇️ Exportar para Excel
+</a>
 <table class="table table-hover">
     <thead>
         <tr>
