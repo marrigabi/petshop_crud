@@ -32,8 +32,12 @@ flask db init
 flask db migrate -m "Criação inicial"
 flask db upgrade
 ```
+### 5. Execute o arquivo seed.py 
 
-### 5. Execute o servidor
+```bash
+python seed.py
+```
+### 6. Execute o servidor
 ```bash
 flask run
 ```
