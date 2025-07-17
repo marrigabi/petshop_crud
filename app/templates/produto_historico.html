@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Histórico de Movimentações: {{ produto.nome }}</h2>
+
+<a class="btn btn-secondary mb-3" href="{{ url_for('listar_produtos') }}">← Voltar para Produtos</a>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th>Quantidade</th>
+            <th>Motivo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for mov in movimentacoes %}
+        <tr class="{% if mov.tipo == 'entrada' %}table-success{% else %}table-danger{% endif %}">
+            <td>{{ mov.data.strftime('%d/%m/%Y') if mov.data else '—' }}</td>
+            <td>
+                {% if mov.tipo == 'entrada' %}
+                    <span class="badge bg-success">⬆️ Entrada</span>
+                {% else %}
+                    <span class="badge bg-danger">⬇️ Saída</span>
+                {% endif %}
+            </td>
+            <td>{{ mov.quantidade }}</td>
+            <td>{{ mov.motivo or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4" class="text-center text-muted">Nenhuma movimentação registrada para este produto.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

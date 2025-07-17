@@ -202,3 +202,14 @@ def relatorio_parados():
     produtos_parados = Produto.query.filter(~Produto.id.in_(produtos_movimentados)).all()
 
     return render_template("relatorio_parados.html", produtos=produtos_parados, dias=dias)
+
+@app.route("/produtos/<int:id>/historico")
+def historico_produto(id):
+    produto = Produto.query.get_or_404(id)
+    movimentacoes = Movimentacao.query.filter_by(produto_id=id).order_by(Movimentacao.data.desc()).all()
+    return render_template("produto_historico.html", produto=produto, movimentacoes=movimentacoes)
+
+@app.route("/relatorios/estoque-baixo")
+def relatorio_estoque_baixo():
+    produtos = Produto.query.filter(Produto.quantidade < Produto.estoque_minimo).all()
+    return render_template("relatorio_estoque_baixo.html", produtos=produtos)
