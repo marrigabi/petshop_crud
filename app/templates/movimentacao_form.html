@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ titulo }}</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.produto_id.label }} {{ form.produto_id(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.tipo.label }} {{ form.tipo(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.quantidade.label }} {{ form.quantidade(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.motivo.label }} {{ form.motivo(class="form-control") }}
+    </div>
+    {{ form.submit(class="btn btn-success") }}
+</form>
+<a href="{{ url_for('listar_movimentacoes') }}" class="btn btn-secondary mt-2">Voltar</a>
+{% endblock %}

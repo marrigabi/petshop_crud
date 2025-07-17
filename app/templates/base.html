@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>PetShop - Gestão</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="sidebar">
+        <h4>🏠 Navegação</h4>
+        <a href="{{ url_for('dashboard') }}">🏠 Início</a>
+
+        <hr>
+
+        <h4>📊 Relatórios</h4>
+        <a href="{{ url_for('relatorio_giro_estoque') }}">📈 Giro de Estoque</a>
+        <a href="{{ url_for('relatorio_vencidos') }}">⚠️ Produtos Vencidos</a>
+        <a href="{{ url_for('relatorio_parados') }}">🕒 Produtos Parados</a>
+
+        <hr>
+
+        <h4>📦 Estoque</h4>
+        <a href="{{ url_for('listar_produtos') }}">Produtos</a>
+        <a href="{{ url_for('listar_fornecedores') }}">Fornecedores</a>
+        <a href="{{ url_for('listar_compras') }}">Compras</a>
+        <a href="{{ url_for('listar_movimentacoes') }}">Movimentações</a>
+    </div>
+
+    <div class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

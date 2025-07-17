@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Relatório de Giro de Estoque</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Produto</th>
+            <th>Quantidade Movimentada</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for nome, total in giro %}
+        <tr>
+            <td>{{ nome }}</td>
+            <td>{{ total }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

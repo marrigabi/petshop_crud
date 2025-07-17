@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Movimentações</h2>
+<a class="btn btn-success mb-3" href="{{ url_for('nova_movimentacao') }}">Nova Movimentação</a>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Produto</th>
+            <th>Tipo</th>
+            <th>Quantidade</th>
+            <th>Motivo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for mov in movimentacoes %}
+        <tr class="{{ 'table-danger' if mov.tipo == 'saida' else 'table-success' }}">
+            <td>{{ mov.data.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>{{ mov.produto.nome }}</td>
+            <td>{{ mov.tipo }}</td>
+            <td>{{ mov.quantidade }}</td>
+            <td>{{ mov.motivo }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

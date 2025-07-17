@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Inicio - Pet Shop</h1>
+<p>Bem-vindo ao sistema de gestão do Pet Shop.</p>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-bg-warning mb-3">
+            <div class="card-header">Estoque Baixo</div>
+            <div class="card-body">
+                <h5 class="card-title">3 Produtos</h5>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+    <div class="col-md-6">
+        <div class="card text-bg-warning mb-3">
+            <div class="card-header">Estoque Baixo</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ estoque_baixo }} produto(s) com estoque baixo</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card text-bg-danger mb-3">
+            <div class="card-header">Validade Próxima</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ proximo_vencimento }} produto(s) vencendo</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="col-md-4">
+        <div class="card text-bg-danger mb-3">
+            <div class="card-header">Produtos Vencendo</div>
+            <div class="card-body">
+                <h5 class="card-title">2 Produtos</h5>
+            </div>
+        </div>
+    </div>
+</div>
+<canvas id="giroEstoque" width="400" height="200"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('giroEstoque').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Ração', 'Shampoo', 'Brinquedo', 'Remédio'],
+        datasets: [{
+            label: 'Vendas no mês',
+            data: [12, 19, 3, 5],
+            backgroundColor: 'rgba(54, 162, 235, 0.7)'
+        }]
+    }
+});
+</script>
+{% endblock %}

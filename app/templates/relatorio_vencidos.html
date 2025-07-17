@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Produtos Vencidos</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Lote</th>
+            <th>Validade</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in produtos %}
+        <tr class="table-danger">
+            <td>{{ p.nome }}</td>
+            <td>{{ p.lote }}</td>
+            <td>{{ p.validade.strftime('%d/%m/%Y') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

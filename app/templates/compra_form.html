@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ titulo }}</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.fornecedor_id.label }} {{ form.fornecedor_id(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.observacao.label }} {{ form.observacao(class="form-control") }}
+    </div>
+    <h5>Itens da Compra</h5>
+    {% for item_form in form.itens %}
+        <div class="row mb-3">
+            <div class="col">
+                {{ item_form.produto_id.label }} {{ item_form.produto_id(class="form-control") }}
+            </div>
+            <div class="col">
+                {{ item_form.quantidade.label }} {{ item_form.quantidade(class="form-control") }}
+            </div>
+        </div>
+    {% endfor %}
+    {{ form.submit(class="btn btn-success") }}
+</form>
+<a href="{{ url_for('listar_compras') }}" class="btn btn-secondary mt-2">Voltar</a>
+{% endblock %}

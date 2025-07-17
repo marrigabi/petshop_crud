@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Compras</h2>
+<a class="btn btn-success mb-3" href="{{ url_for('nova_compra') }}">Nova Compra</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Fornecedor</th>
+            <th>Data</th>
+            <th>Observação</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for compra in compras %}
+        <tr>
+            <td>{{ compra.fornecedor.nome }}</td>
+            <td>{{ compra.data.strftime('%d/%m/%Y') }}</td>
+            <td>{{ compra.observacao }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

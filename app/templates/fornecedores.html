@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Fornecedores</h2>
+<a class="btn btn-success mb-3" href="{{ url_for('novo_fornecedor') }}">Novo Fornecedor</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Contato</th>
+            <th>Avaliação</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for f in fornecedores %}
+        <tr>
+            <td>{{ f.nome }}</td>
+            <td>{{ f.contato }}</td>
+            <td>{{ f.avaliacao }}</td>
+            <td>
+                <a class="btn btn-sm btn-primary" href="{{ url_for('editar_fornecedor', id=f.id) }}">Editar</a>
+                <form action="{{ url_for('excluir_fornecedor', id=f.id) }}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Deseja excluir?')">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

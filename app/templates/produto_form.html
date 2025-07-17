@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ titulo }}</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.nome.label }} {{ form.nome(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.lote.label }} {{ form.lote(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.validade.label }} {{ form.validade(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.quantidade.label }} {{ form.quantidade(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.estoque_minimo.label }} {{ form.estoque_minimo(class="form-control") }}
+    </div>
+    <div class="mb-3">
+        {{ form.estoque_maximo.label }} {{ form.estoque_maximo(class="form-control") }}
+    </div>
+    {{ form.submit(class="btn btn-success") }}
+</form>
+<a href="{{ url_for('listar_produtos') }}" class="btn btn-secondary mt-2">Voltar</a>
+{% endblock %}
