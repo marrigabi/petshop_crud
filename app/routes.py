@@ -213,3 +213,31 @@ def historico_produto(id):
 def relatorio_estoque_baixo():
     produtos = Produto.query.filter(Produto.quantidade < Produto.estoque_minimo).all()
     return render_template("relatorio_estoque_baixo.html", produtos=produtos)
+
+@app.route("/compras/sugestao", methods=["GET", "POST"])
+def sugestao_compra():
+    produtos = Produto.query.filter(Produto.quantidade < Produto.estoque_minimo).all()
+    
+    if not produtos:
+        flash("Não há produtos abaixo do estoque mínimo para sugerir uma compra.", "info")
+        return redirect(url_for("relatorio_estoque_baixo"))
+    
+    # Para simplificar, vamos usar o primeiro fornecedor existente
+    fornecedor = Fornecedor.query.first()
+    if not fornecedor:
+        flash("É necessário ter pelo menos um fornecedor cadastrado para gerar a sugestão.", "danger")
+        return redirect(url_for("listar_fornecedores"))
+
+    # Criar a compra
+    compra = Compra(fornecedor_id=fornecedor.id, observacao="Compra gerada automaticamente por sugestão de estoque")
+    db.session.add(compra)
+    db.session.flush()  # Garante que compra.id já exista
+
+    for p in produtos:
+        quantidade_sugerida = max(p.estoque_maximo - p.quantidade, 1)
+        item = ItemCompra(compra_id=compra.id, produto_id=p.id, quantidade=quantidade_sugerida)
+        db.session.add(item)
+
+    db.session.commit()
+    flash("Sugestão de compra gerada com sucesso!", "success")
+    return redirect(url_for("listar_compras"))

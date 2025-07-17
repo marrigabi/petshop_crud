@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📉 Produtos com Estoque Abaixo do Mínimo</h2>
+
+<a class="btn btn-secondary mb-3" href="{{ url_for('listar_produtos') }}">← Voltar</a>
+<form action="{{ url_for('sugestao_compra') }}" method="post">
+    <button type="submit" class="btn btn-success mb-3">
+        ➕ Gerar Sugestão de Compra
+    </button>
+</form>
+
+{% if produtos %}
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Nome</th>
+            <th>Qtd. Atual</th>
+            <th>Estoque Mínimo</th>
+            <th>Estoque Máximo</th>
+            <th>Sugestão de Compra</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in produtos %}
+        <tr class="table-warning">
+            <td>{{ p.nome }}</td>
+            <td>{{ p.quantidade }}</td>
+            <td>{{ p.estoque_minimo }}</td>
+            <td>{{ p.estoque_maximo }}</td>
+            <td>
+                {% set sugerido = p.estoque_maximo - p.quantidade %}
+                {{ sugerido if sugerido > 0 else 0 }}
+            </td>
+        </tr>
+        {% endfor %}
+        
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-success">
+    ✅ Todos os produtos estão com estoque adequado!
+</div>
+{% endif %}
+{% endblock %}
