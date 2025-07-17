@@ -1,0 +1,31 @@
+# Ambiente virtual
+venv/
+ENV/
+env/
+.venv/
+*.pyc
+__pycache__/
+
+# Banco de dados local
+*.db
+*.sqlite3
+instance/
+
+# Arquivos de migração automáticos gerados pelo Flask-Migrate
+migrations/versions/
+
+# Arquivos temporários
+*.log
+*.bak
+*.swp
+.DS_Store
+*.tmp
+
+# Configs de editor
+.vscode/
+.idea/
+*.code-workspace
+
+# Arquivos do sistema
+Thumbs.db
+ehthumbs.db
