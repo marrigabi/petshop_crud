@@ -5,6 +5,9 @@ from datetime import datetime, date, timedelta
 from sqlalchemy import func
 from app.models import Movimentacao, Produto, Fornecedor, Compra, ItemCompra
 from app.forms import MovimentacaoForm, ProdutoForm, FornecedorForm, CompraForm, ItemCompraForm
+import pandas as pd
+from flask import send_file
+import io
 @app.route("/")
 def dashboard():
     produtos = Produto.query.all()
@@ -289,3 +292,203 @@ def sugestao_compra():
     db.session.commit()
     flash("Sugestão de compra gerada com sucesso!", "success")
     return redirect(url_for("listar_compras"))
+
+
+@app.route("/relatorios/previsoes")
+def relatorio_previsoes():
+    hoje = date.today()
+    limite_validade = hoje + timedelta(days=30)
+
+    # Produtos vencendo nos próximos 30 dias
+    produtos_vencendo = Produto.query.filter(
+        Produto.validade != None,
+        Produto.validade <= limite_validade,
+        Produto.validade >= hoje
+    ).all()
+
+    # Produtos com estoque crítico + giro recente (simples previsão)
+    # Supondo que movimentações nas últimas 30 dias indicam consumo
+    limite_data = hoje - timedelta(days=30)
+    produtos_movimentados = (
+        db.session.query(Produto.id, db.func.sum(Movimentacao.quantidade).label('total'))
+        .join(Movimentacao)
+        .filter(Movimentacao.data >= limite_data, Movimentacao.tipo == 'saida')
+        .group_by(Produto.id)
+        .having(db.func.sum(Movimentacao.quantidade) > 0)
+        .all()
+    )
+
+    # Produtos com giro alto e estoque já próximo do mínimo
+    ids_previsao_ruptura = [pid for pid, total in produtos_movimentados]
+    produtos_em_alerta = Produto.query.filter(
+        Produto.id.in_(ids_previsao_ruptura),
+        Produto.quantidade <= Produto.estoque_minimo + 3  # margem
+    ).all()
+
+    return render_template(
+        "relatorio_previsoes.html",
+        produtos_vencendo=produtos_vencendo,
+        produtos_em_alerta=produtos_em_alerta
+    )
+
+
+@app.route("/relatorios/estoque-baixo/exportar")
+def exportar_estoque_baixo():
+    produtos = Produto.query.filter(Produto.quantidade < Produto.estoque_minimo).all()
+
+    if not produtos:
+        flash("Nenhum produto abaixo do estoque mínimo para exportar.", "info")
+        return redirect(url_for("relatorio_estoque_baixo"))
+
+    data = [{
+        "Nome": p.nome,
+        "Lote": p.lote,
+        "Quantidade Atual": p.quantidade,
+        "Estoque Mínimo": p.estoque_minimo,
+        "Estoque Máximo": p.estoque_maximo,
+        "Sugestão de Compra": max(p.estoque_maximo - p.quantidade, 0)
+    } for p in produtos]
+
+    df = pd.DataFrame(data)
+
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Estoque Baixo')
+
+    output.seek(0)
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="estoque_baixo.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+@app.route("/relatorios/previsoes/exportar")
+def exportar_previsoes():
+    from datetime import date, timedelta
+    hoje = date.today()
+    limite_validade = hoje + timedelta(days=30)
+    limite_data = hoje - timedelta(days=30)
+
+    # Produtos vencendo
+    produtos_vencendo = Produto.query.filter(
+        Produto.validade != None,
+        Produto.validade <= limite_validade,
+        Produto.validade >= hoje
+    ).all()
+
+    # Produtos com previsão de ruptura
+    produtos_movimentados = (
+        db.session.query(Produto.id, db.func.sum(Movimentacao.quantidade).label('total'))
+        .join(Movimentacao)
+        .filter(Movimentacao.data >= limite_data, Movimentacao.tipo == 'saida')
+        .group_by(Produto.id)
+        .having(db.func.sum(Movimentacao.quantidade) > 0)
+        .all()
+    )
+    ids_alerta = [pid for pid, _ in produtos_movimentados]
+    produtos_em_alerta = Produto.query.filter(
+        Produto.id.in_(ids_alerta),
+        Produto.quantidade <= Produto.estoque_minimo + 3
+    ).all()
+
+    # Montar planilhas separadas
+    df1 = pd.DataFrame([{
+        "Nome": p.nome,
+        "Validade": p.validade.strftime('%d/%m/%Y'),
+        "Quantidade": p.quantidade
+    } for p in produtos_vencendo])
+
+    df2 = pd.DataFrame([{
+        "Nome": p.nome,
+        "Qtd Atual": p.quantidade,
+        "Estoque Mínimo": p.estoque_minimo
+    } for p in produtos_em_alerta])
+
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df1.to_excel(writer, index=False, sheet_name="Vencimento Próximo")
+        df2.to_excel(writer, index=False, sheet_name="Ruptura Estoque")
+
+    output.seek(0)
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="relatorio_previsoes.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+@app.route("/relatorios/giro/exportar")
+def exportar_giro():
+    giro = (
+        db.session.query(
+            Produto.nome,
+            db.func.count(Movimentacao.id).label('movimentacoes'),
+            db.func.sum(Movimentacao.quantidade).label('quantidade')
+        )
+        .join(Movimentacao)
+        .filter(Movimentacao.tipo == 'saida')
+        .group_by(Produto.id)
+        .order_by(db.func.sum(Movimentacao.quantidade).desc())
+        .all()
+    )
+
+    df = pd.DataFrame([{
+        "Produto": nome,
+        "Movimentações": movs,
+        "Qtd Total Saída": qtd
+    } for nome, movs, qtd in giro])
+
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name="Giro de Estoque")
+
+    output.seek(0)
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="giro_estoque.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+@app.route("/relatorios/parados/exportar")
+def exportar_parados():
+    from datetime import date, timedelta
+    hoje = date.today()
+    dias = 30
+    limite_data = hoje - timedelta(days=dias)
+
+    # Produtos com movimentações de saída nos últimos 30 dias
+    ativos = (
+        db.session.query(Movimentacao.produto_id)
+        .filter(Movimentacao.data >= limite_data, Movimentacao.tipo == 'saida')
+        .distinct()
+    )
+
+    # Produtos que não estão na lista de ativos
+    produtos_parados = Produto.query.filter(~Produto.id.in_(ativos)).all()
+
+    if not produtos_parados:
+        flash("Nenhum produto parado nos últimos 30 dias para exportar.", "info")
+        return redirect(url_for("relatorio_parados"))
+
+    # Gerar DataFrame
+    df = pd.DataFrame([{
+        "Nome": p.nome,
+        "Lote": p.lote,
+        "Quantidade": p.quantidade,
+        "Validade": p.validade.strftime('%d/%m/%Y') if p.validade else "—"
+    } for p in produtos_parados])
+
+    # Gerar Excel
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name="Produtos Parados")
+
+    output.seek(0)
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="produtos_parados.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
