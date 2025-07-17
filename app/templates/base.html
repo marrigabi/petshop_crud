@@ -1,52 +1,122 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>PetShop - Gestão</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8" />
+  <title>{% block title %}Pet Shop{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Ícones Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    /* Estilos para a sidebar fixa */
+    body {
+      display: flex;
+    }
+    /* Sidebar */
+    .sidebar {
+      min-width: 220px;
+      max-width: 220px;
+      height: 100vh;
+      background-color: #0d6efd; /* Cor primária do Bootstrap */
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding-top: 56px; /* espaço para topo, se necessário */
+    }
+    /* Conteúdo ao lado da sidebar */
+    .content {
+      margin-left: 220px;
+      padding: 20px;
+      width: 100%;
+    }
+    /* Estilo do menu da sidebar */
+    .sidebar .nav-link {
+      color: #fff;
+    }
+    .sidebar .nav-link:hover {
+      background-color: #0b5ed7;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <h4>🏠 Navegação</h4>
-        <a href="{{ url_for('dashboard') }}">🏠 Início</a>
+<!-- Sidebar -->
+<div class="sidebar d-flex flex-column p-3">
+  <h4 class="text-white mb-4">🐾 Pet Shop</h4>
+  <ul class="nav nav-pills flex-column mb-auto">
+    <li class="nav-item">
+      <a href="{{ url_for('index') }}" class="nav-link text-white px-3">
+        <i class="bi bi-house-door-fill"></i> Início
+      </a>
+    </li>
+    <li>
+      <a href="{{ url_for('listar_produtos') }}" class="nav-link text-white px-3">
+        <i class="bi bi-box"></i> Produtos
+      </a>
+    </li>
+    <li>
+      <a href="{{ url_for('listar_compras') }}" class="nav-link text-white px-3">
+        <i class="bi bi-cart-check"></i> Compras
+      </a>
+    </li>
+    <li>
+      <a href="{{ url_for('listar_fornecedores') }}" class="nav-link text-white px-3">
+        <i class="bi bi-truck"></i> Fornecedores
+      </a>
+    </li>
+    <li>
+      <a href="{{ url_for('listar_movimentacoes') }}" class="nav-link text-white px-3">
+        <i class="bi bi-arrow-left-right"></i> Movimentações
+      </a>
+    </li>
+    <!-- Dropdown de Relatórios -->
+    <li>
+      <a class="nav-link dropdown-toggle text-white px-3" data-bs-toggle="collapse" href="#relatoriosMenu" role="button" aria-expanded="false" aria-controls="relatoriosMenu">
+        <i class="bi bi-bar-chart-line"></i> Relatórios
+      </a>
+      <div class="collapse" id="relatoriosMenu">
+        <ul class="list-unstyled ps-3">
+          <li><a class="nav-link text-white" href="{{ url_for('relatorio_estoque_baixo') }}">📉 Estoque Mínimo</a></li>
+          <li><a class="nav-link text-white" href="{{ url_for('relatorio_previsoes') }}">🔮 Previsões</a></li>
+          <li><a class="nav-link text-white" href="{{ url_for('relatorio_giro_estoque') }}">📈 Giro</a></li>
+          <li><a class="nav-link text-white" href="{{ url_for('relatorio_parados') }}">🕒 Parados</a></li>
+          <li><a class="nav-link text-white" href="{{ url_for('relatorio_vencidos') }}">⚠️ Vencidos</a></li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</div>
 
-        <hr>
+<!-- Área principal de conteúdo -->
+<div class="content">
+  <!-- Mensagens flash -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="d-flex flex-column gap-2 mb-3">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible shadow-sm border-0 rounded-pill px-4 py-2 d-flex justify-content-between align-items-center" role="alert">
+            <div>
+              {% if category == 'success' %} ✅
+              {% elif category == 'danger' %} ❌
+              {% elif category == 'warning' %} ⚠️
+              {% elif category == 'info' %} ℹ️
+              {% endif %}
+              {{ message }}
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  
+  <!-- Seu conteúdo principal aqui -->
+  {% block content %}
+  {% endblock %}
+</div>
 
-        <h4>📊 Relatórios</h4>
-        <a href="{{ url_for('relatorio_giro_estoque') }}">📈 Giro de Estoque</a>
-        <a href="{{ url_for('relatorio_vencidos') }}">⚠️ Produtos Vencidos</a>
-        <a href="{{ url_for('relatorio_parados') }}">🕒 Produtos Parados</a>
-        <a href="{{ url_for('relatorio_previsoes') }}">🧠 Previsões (Validade & Estoque)</a>
-        <a href="{{ url_for('relatorio_estoque_baixo') }}">🧯 Estoque Abaixo do Mínimo</a>
-
-
-        <hr>
-
-        <h4>📦 Estoque</h4>
-        <a href="{{ url_for('listar_produtos') }}">Produtos</a>
-        <a href="{{ url_for('listar_fornecedores') }}">Fornecedores</a>
-        <a href="{{ url_for('listar_compras') }}">Compras</a>
-        <a href="{{ url_for('listar_movimentacoes') }}">Movimentações</a>
-        
-    </div>
-
-    <div class="content">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-        {% endwith %}
-
-        {% block content %}{% endblock %}
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Scripts Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
