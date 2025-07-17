@@ -3,8 +3,6 @@ from app import app, db
 from app.models import Produto, Movimentacao
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
-
-
 from app.models import Movimentacao, Produto, Fornecedor, Compra, ItemCompra
 from app.forms import MovimentacaoForm, ProdutoForm, FornecedorForm, CompraForm, ItemCompraForm
 @app.route("/")
@@ -21,6 +19,56 @@ def dashboard():
     return render_template("dashboard.html", produtos=produtos,
                            estoque_baixo=estoque_baixo,
                            proximo_vencimento=proximo_vencimento)
+
+
+
+@app.route("/")
+def index():
+    # Produtos mais movimentados (contagem de movimentações por produto)
+    movimentacoes_por_produto = (
+        db.session.query(Produto.nome, func.count(Movimentacao.id))
+        .join(Movimentacao)
+        .group_by(Produto.id)
+        .order_by(func.count(Movimentacao.id).desc())
+        .limit(5)
+        .all()
+    )
+
+    nomes_produtos = [nome for nome, _ in movimentacoes_por_produto]
+    qtd_movs = [qtd for _, qtd in movimentacoes_por_produto]
+
+    # Tipo de movimentações
+    tipos_mov = (
+        db.session.query(Movimentacao.tipo, func.count(Movimentacao.id))
+        .group_by(Movimentacao.tipo)
+        .all()
+    )
+    tipos = [t[0] for t in tipos_mov]
+    contagens = [t[1] for t in tipos_mov]
+
+    # Compras por mês (últimos 6 meses)
+    hoje = datetime.today()
+    data_inicio = datetime(hoje.year, hoje.month - 5, 1) if hoje.month > 5 else datetime(hoje.year - 1, hoje.month + 7, 1)
+
+    compras_por_mes = (
+        db.session.query(func.strftime('%Y-%m', Compra.data), func.count(Compra.id))
+        .filter(Compra.data >= data_inicio)
+        .group_by(func.strftime('%Y-%m', Compra.data))
+        .order_by(func.strftime('%Y-%m', Compra.data))
+        .all()
+    )
+
+    meses = [m[0] for m in compras_por_mes]
+    qtd_compras = [m[1] for m in compras_por_mes]
+
+    return render_template("dashboard.html",
+        nomes_produtos=nomes_produtos,
+        qtd_movs=qtd_movs,
+        tipos=tipos,
+        contagens=contagens,
+        meses=meses,
+        qtd_compras=qtd_compras
+    )
 
 
 # Produtos
