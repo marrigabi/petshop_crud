@@ -9,8 +9,8 @@ Este é um sistema de gestão completo para Pet Shop, desenvolvido com **Flask +
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/petshop-flask.git
-cd petshop-flask
+git clone https://github.com/marrigabi/petshop_crud.git
+cd petshop-crud
 ```
 
 ### 2. Crie e ative um ambiente virtual 
