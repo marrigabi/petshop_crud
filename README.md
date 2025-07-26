@@ -69,3 +69,15 @@ flask run
 🔍 Busca de produtos
 
 🎨 Layout responsivo com sidebar e Bootstrap 5
+
+
+testes: para tests utilizar com o ambiente virtual ativo os seguintes comandos
+
+```bash
+$env:FLASK_APP = "run"
+```
+
+```bash
+pytest -W ignore::sqlalchemy.exc.LegacyAPIWarning
+```
+
