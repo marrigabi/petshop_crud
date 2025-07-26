@@ -78,6 +78,6 @@ $env:FLASK_APP = "run"
 ```
 
 ```bash
-pytest -W ignore::sqlalchemy.exc.LegacyAPIWarning
+pytest -p no:warnings
 ```
 
