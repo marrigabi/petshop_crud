@@ -4,11 +4,13 @@ from datetime import datetime, timezone
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+#Verifica se a página inicial da aplicação está funcionando
 def test_index_dashboard(client):
     response = client.get('/')
     assert response.status_code == 200
     assert b"Dashboard" in response.data or b"Estoque" in response.data
 
+#Testa se um produto adicionado ao banco é exibido corretamente na listagem.
 def test_listar_produtos(client):
     produto = Produto(nome="Ração", lote="ABC123", validade=None,
                       quantidade=15, estoque_minimo=5, estoque_maximo=30)
@@ -18,15 +20,19 @@ def test_listar_produtos(client):
     response = client.get("/produtos")
     assert response.status_code == 200
     assert "Ração" in response.data.decode("utf-8")
+    
+#Verifica se a funcionalidade de busca de produtos por nome ou parte do nome está ativa.
 def test_buscar_produtos(client):
     response = client.get("/produtos?q=ra")
     assert response.status_code == 200
 
+#Garante que o formulário para adicionar produtos é carregado corretamente via GET.
 def test_novo_produto_form(client):
     response = client.get("/produtos/novo")
     assert response.status_code == 200
     assert b"Produto" in response.data
 
+#Testa se um novo produto pode ser criado via POST e se ele aparece na listagem após o redirecionamento.
 def test_novo_produto_post(client):
     response = client.post("/produtos/novo", data={
         "nome": "Produto Teste",
@@ -39,6 +45,7 @@ def test_novo_produto_post(client):
     assert response.status_code == 200
     assert b"Produto Teste" in response.data
 
+# Verifica se um produto pode ser atualizado corretamente por meio do formulário de edição.
 def test_editar_produto(client):
     produto = Produto(nome="Editar", lote="ED1", validade=None,
                       quantidade=10, estoque_minimo=5, estoque_maximo=20)
@@ -54,6 +61,7 @@ def test_editar_produto(client):
     }, follow_redirects=True)
     assert b"Editado" in response.data
 
+# Testa a exclusão de um produto e verifica se ele não aparece mais na listagem
 def test_excluir_produto(client):
     produto = Produto(nome="Excluir", lote="EX1", validade=None,
                       quantidade=5, estoque_minimo=2, estoque_maximo=10)
@@ -63,6 +71,7 @@ def test_excluir_produto(client):
     response = client.post(f"/produtos/{produto.id}/excluir", follow_redirects=True)
     assert response.status_code == 200
 
+#Confirma se a visualização do histórico de movimentações de um produto está acessível.
 def test_historico_produto(client):
     produto = Produto(nome="Hist", lote="H1", validade=None,
                       quantidade=5, estoque_minimo=1, estoque_maximo=10)
@@ -72,6 +81,7 @@ def test_historico_produto(client):
     response = client.get(f"/produtos/{produto.id}/historico")
     assert response.status_code == 200
 
+# Garante que os fornecedores cadastrados aparecem na listagem.
 def test_listar_fornecedores(client):
     fornecedor = Fornecedor(nome="Fornecedor Teste", contato="(00)0000-0000", avaliacao=5)
     db.session.add(fornecedor)
@@ -81,6 +91,7 @@ def test_listar_fornecedores(client):
     assert response.status_code == 200
     assert b"Fornecedor Teste" in response.data
 
+#Verificam respectivamente a criação, edição e exclusão de fornecedores. (3 abaixo)
 def test_novo_fornecedor(client):
     response = client.post("/fornecedores/novo", data={
         "nome": "Fornecedor Novo",
@@ -109,6 +120,7 @@ def test_excluir_fornecedor(client):
     response = client.post(f"/fornecedores/{fornecedor.id}/excluir", follow_redirects=True)
     assert response.status_code == 200
 
+#Verifica se compras registradas são listadas corretamente.
 def test_listar_compras(client):
     fornecedor = Fornecedor(nome="Forn", contato="123", avaliacao=3)
     db.session.add(fornecedor)
@@ -122,10 +134,12 @@ def test_listar_compras(client):
     assert response.status_code == 200
     assert b"Compra teste" in response.data
 
+# Testa o formulário de nova compra
 def test_nova_compra_form_get(client):
     response = client.get("/compras/nova")
     assert response.status_code == 200
 
+# Testa o envio do formulário de nova compra
 def test_nova_compra_post(client):
     fornecedor = Fornecedor(nome="Forn Compra", contato="Z", avaliacao=5)
     db.session.add(fornecedor)
@@ -137,6 +151,7 @@ def test_nova_compra_post(client):
     }, follow_redirects=True)
     assert b"Compra nova" in response.data
 
+#Garante que movimentações de entrada/saída são exibidas corretamente.
 def test_listar_movimentacoes(client):
     produto = Produto(nome="Vacina", lote="LZ99", validade=None, quantidade=50,
                       estoque_minimo=10, estoque_maximo=100)
@@ -152,6 +167,7 @@ def test_listar_movimentacoes(client):
     assert response.status_code == 200
     assert b"Reabastecimento" in response.data
 
+#Testa a criação de uma nova movimentação
 def test_nova_movimentacao_post(client):
     produto = Produto(nome="Nova Mov", lote="XYZ", validade=None, quantidade=10,
                       estoque_minimo=1, estoque_maximo=20)
@@ -166,6 +182,7 @@ def test_nova_movimentacao_post(client):
     }, follow_redirects=True)
     assert b"Teste" in response.data
 
+#Confirma que todas as páginas de relatórios estão acessíveis.
 def test_relatorios_get(client):
     urls = [
         "/relatorios/giro",
@@ -178,10 +195,12 @@ def test_relatorios_get(client):
         response = client.get(url)
         assert response.status_code == 200
 
+# Testa o redirecionamento para a página de relatórios de estoque baixo
 def test_export_estoque_baixo_redirect(client):
     response = client.get("/relatorios/estoque-baixo/exportar")
     assert response.status_code == 302 
 
+# Testa a exportação de relatórios em Excel
 def test_export_other_excel(client):
     urls = [
         "/relatorios/previsoes/exportar",
@@ -192,9 +211,9 @@ def test_export_other_excel(client):
         response = client.get(url)
         assert response.status_code in (200, 302)
 
-import pytest
 from app.models import Produto, Fornecedor
 
+#Confirmam que o sistema lida corretamente com requisições para produtos que não existem (2 abaixo)
 def test_editar_produto_inexistente(client):
     response = client.get("/produtos/999999/editar")
     assert response.status_code == 404
@@ -203,10 +222,12 @@ def test_excluir_produto_inexistente(client):
     response = client.post("/produtos/999999/excluir")
     assert response.status_code == 404
 
+#Verifica que uma tentativa de excluir via GET falha com erro 405 (método não permitido).
 def test_excluir_produto_get_method_not_allowed(client):
     response = client.get("/produtos/1/excluir")
     assert response.status_code == 405
-
+    
+#Validam mensagens de aviso ao tentar sugerir compras em condições não atendidas. (2 abaixo)
 def test_sugestao_compra_sem_produtos_estoque_baixo(client):
     response = client.get("/compras/sugestao", follow_redirects=True)
     assert "Não há produtos abaixo do estoque mínimo" in response.data.decode("utf-8")
@@ -225,6 +246,7 @@ def test_sugestao_compra_sem_fornecedor(client):
     response = client.get("/compras/sugestao", follow_redirects=True)
     assert "É necessário ter pelo menos um fornecedor" in response.data.decode("utf-8")
 
+# Testa a exportação de produtos com estoque baixo quando não há produtos
 def test_exportar_estoque_baixo_redirect_quando_vazio(client):
     from app.models import Produto
     Produto.query.update({Produto.quantidade: Produto.estoque_minimo + 10})
@@ -234,6 +256,7 @@ def test_exportar_estoque_baixo_redirect_quando_vazio(client):
     response = client.get("/relatorios/estoque-baixo/exportar", follow_redirects=True)
     assert "Nenhum produto abaixo do estoque mínimo" in response.data.decode("utf-8")
 
+# Testa a exportação de produtos parados em formato XLSX quando não há produtos
 def test_exportar_parados_redirect_quando_vazio(client):
     from app.models import Movimentacao, Produto
     from datetime import datetime, timezone
@@ -251,6 +274,7 @@ def test_exportar_parados_redirect_quando_vazio(client):
     response = client.get("/relatorios/parados/exportar", follow_redirects=True)
     assert b"Nenhum produto parado" in response.data
 
+# Testa a exportação de produtos com estoque baixo em formato XLSX
 def test_exportar_estoque_baixo_xlsx(client):
     produto = Produto(nome="Produto Export", lote="LoteX", validade=None,
                       quantidade=0, estoque_minimo=5, estoque_maximo=10)
@@ -262,16 +286,19 @@ def test_exportar_estoque_baixo_xlsx(client):
     assert response.status_code == 200
     assert response.headers["Content-Type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
+# Testa a exportação de previsões de compra em formato XLSX
 def test_exportar_previsoes_xlsx(client):
     response = client.get("/relatorios/previsoes/exportar")
     assert response.status_code == 200
     assert response.headers["Content-Type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
+# Testa a exportação de produtos com giro em formato XLSX
 def test_exportar_giro_xlsx(client):
     response = client.get("/relatorios/giro/exportar")
     assert response.status_code == 200
     assert response.headers["Content-Type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
+# Testa a exportação de produtos parados em formato XLSX
 def test_exportar_parados_xlsx(client):
     produto = Produto(nome="Produto Parado", lote="LP", validade=None,
                       quantidade=10, estoque_minimo=5, estoque_maximo=20)
