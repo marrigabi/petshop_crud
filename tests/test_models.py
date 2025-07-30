@@ -1,6 +1,7 @@
 from datetime import datetime
 from app.models import Produto, Fornecedor, Compra, ItemCompra, Movimentacao
 
+# Testa a criação de um objeto Produto com atributos válidos
 def test_criar_produto():
     produto = Produto(
         nome="Ração Premium",
@@ -13,6 +14,7 @@ def test_criar_produto():
     assert produto.nome == "Ração Premium"
     assert produto.quantidade == 10
 
+# Testa a criação de um Fornecedor com nome, contato e avaliação
 def test_criar_fornecedor():
     fornecedor = Fornecedor(
         nome="Fornecedor Exemplo",
@@ -22,6 +24,7 @@ def test_criar_fornecedor():
     assert fornecedor.nome == "Fornecedor Exemplo"
     assert fornecedor.avaliacao == 4
 
+# Testa a criação de uma Compra com fornecedor, observação e data definidos
 def test_criar_compra():
     fornecedor = Fornecedor(nome="Fornecedor A")
     data_fake = datetime(2025, 1, 1)
@@ -34,7 +37,7 @@ def test_criar_compra():
     assert compra.fornecedor.nome == "Fornecedor A"
     assert compra.data == data_fake
 
-
+# Testa a criação de um ItemCompra com produto, compra e quantidade
 def test_criar_item_compra():
     produto = Produto(
         nome="Ração",
@@ -60,6 +63,7 @@ def test_criar_item_compra():
     assert item.quantidade == 3
     assert item.produto.nome == "Ração"
 
+# Testa a criação de uma Movimentação com tipo, quantidade, motivo e data
 def test_criar_movimentacao():
     produto = Produto(nome="Ração", quantidade=20)
     data_fake = datetime(2025, 1, 1)
